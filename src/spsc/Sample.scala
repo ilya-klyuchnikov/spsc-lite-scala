@@ -104,28 +104,10 @@ object Sample {
   }
   
   def runSuperCompiler(targetText: String, programText: String) = {
-    val program = SParsers.parseProg(programText)
-    val target = SParsers.parseTerm(targetText)
-    val sc = new SuperCompiler(program)
-    val pt = sc.buildProcessTree(target)
-    val (resTerm, resProgram) = new ResidualProgramGenerator(pt).result
-    println("** runSuperCompiler **")
-    println(target); println(program);
-    println()
-    println(resTerm); println(resProgram);
-    println("-------")
+    
   }
   
   def runBaseSuperCompiler(targetText: String, programText: String) = {
-    val program = SParsers.parseProg(programText)
-    val target = SParsers.parseTerm(targetText)
-    val sc = new BaseSuperCompiler(program)
-    val pt = sc.buildProcessTree(target)
-    val (resTerm, resProgram) = new ResidualProgramGenerator(pt).result
-    println("** runBaseSuperCompiler **")
-    println(target); println(program);
-    println()
-    println(resTerm); println(resProgram);
-    println("-------")
+    
   }
 }

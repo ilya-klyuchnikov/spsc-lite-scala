@@ -16,7 +16,10 @@ case class GCall(name: String, args: List[Term]) extends Term {
   override def toString = name + args.mkString("(", ", " ,")")
 }
 
+// generalization
 case class Let(term: Term, bindings: List[(Var, Term)]) extends Term
+// for case split
+case class DeCtr(name: String, arg: Var) extends Term
 
 case class Pat(name: String, args: List[Var]) {
   override def toString = name + args.mkString("(", ", " ,")")
