@@ -2,11 +2,11 @@ package spsc
 
 object Decomposition {
   abstract sealed class Dec
-  case class DecLet(let: Let) extends Dec
   abstract sealed class Observable extends Dec
   case class ObservableCtr(c: Ctr) extends Observable
   case class ObservableVar(v: Var) extends Observable
-
+  case class ObservableDeCtr(dc: DeCtr) extends Observable
+  
   abstract case class Context(red: Redex) extends Dec {
     def replaceRedex(t: Term): Term
   }
@@ -21,11 +21,12 @@ object Decomposition {
   case class RedexFCall(fcall: FCall) extends Redex(fcall)
   case class RedexGCallCtr(gcall: GCall, ctr: Ctr) extends Redex(gcall)
   case class RedexGCallVar(gcall: GCall, vrb: Var) extends Redex(gcall)
+  case class RedexGCallDeCtr(gcall: GCall, dc: DeCtr) extends Redex(gcall)
 
   def decompose(t: Term): Dec = t match {
-    case l: Let => DecLet(l)
     case v: Var => ObservableVar(v)
     case c: Ctr => ObservableCtr(c)
+    case d: DeCtr => ObservableDeCtr(d)
     case f: FCall => new ContextHole(RedexFCall(f))
     case g: GCall => processGCall(g)
   }
@@ -35,5 +36,6 @@ object Decomposition {
     case f: FCall => new ContextGCall(g, new ContextHole(RedexFCall(f)))
     case v: Var => new ContextHole(RedexGCallVar(g, v))
     case c: Ctr => new ContextHole(RedexGCallCtr(g, c))
+    case dc: DeCtr => new ContextHole(RedexGCallDeCtr(g, dc))
   }
 }

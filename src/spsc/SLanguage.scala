@@ -1,6 +1,6 @@
 package spsc
 
-abstract class Term
+abstract sealed class Term
 
 case class Var(name: String) extends Term {
   override def toString = name
@@ -17,9 +17,11 @@ case class GCall(name: String, args: List[Term]) extends Term {
 }
 
 // generalization
-case class Let(term: Term, bindings: List[(Var, Term)]) extends Term
+//case class Let(term: Term, bindings: List[(Var, Term)]) extends Term
 // for case split
-case class DeCtr(name: String, arg: Var) extends Term
+case class DeCtr(name: String, argN: Int, t: Term) extends Term {
+	override def toString() = name + "#" + argN + "(" + t + ")"
+}
 
 case class Pat(name: String, args: List[Var]) {
   override def toString = name + args.mkString("(", ", " ,")")

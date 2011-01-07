@@ -1,7 +1,7 @@
 package spsc
 
 import Decomposition._
-import Algebra._
+import SimpleAlgebra._
 
 abstract sealed class PTree[A] {
   def toString(indent: String): String
@@ -29,11 +29,18 @@ object Deforester {
 
   private def canFold(e: Term, history: List[Term]) = history.exists { SimpleAlgebra.renaming(_, e, Nil).isDefined }
   private def driveStep(e: Term): List[Term] = null
+
+  def trivial(expr: Term): Boolean = expr match {
+    case FCall(_, _) => false
+    case GCall(_, _) => false
+    case _ => true
+  }
 }
 
 object Driver {
   def drive(e: Term, p: Program): List[Term] = decompose(e) match {
     case ObservableVar(v) => Nil
+    case ObservableDeCtr(d) => Nil
     case ObservableCtr(Ctr(_, args)) => args
     case context@Context(red) =>
       red match {
@@ -46,10 +53,16 @@ object Driver {
           val gReduced = subst(g.term, Map((g.p.args ::: g.args) zip (cargs ::: args.tail): _*))
           List(context.replaceRedex(gReduced))
         }
-        // TODO!!!
         case RedexGCallVar(GCall(name, args), v) => {
           p.gs(name) map { g =>
-            val fp = freshPat(g.p)
+            val fp = freshPat(g.p, v)
+            val gReduced = subst(g.term, Map((g.p.args ::: g.args) zip (fp.args ::: args.tail): _*))
+            context.replaceRedex(gReduced)
+          }
+        }
+        case RedexGCallDeCtr(GCall(name, args), d) => {
+          p.gs(name) map { g =>
+            val fp = freshPat(g.p, d)
             val gReduced = subst(g.term, Map((g.p.args ::: g.args) zip (fp.args ::: args.tail): _*))
             context.replaceRedex(gReduced)
           }
@@ -57,43 +70,41 @@ object Driver {
       }
   }
 
-  def freshPat(p: Pat) = Pat(p.name, p.args map freshVar)
+  def freshPat(p: Pat, v: Term) = Ctr(p.name, p.args.indices.toList map { x => DeCtr(p.name, x, v) })
 }
 
 object SimpleAlgebra {
-  // this is not good - it doesn't take into account deconstructors
-  def renaming(e1: Term, e2: Term, walked: List[(Var, Var)]): Option[List[(Var, Var)]] = {
+  // TODO: this is not good - it doesn't take into account deconstructors. 
+  // That is: D(x) is not renaming of D(D(x))
+  // here is a subtle question how to do it in a good way.
+  def renaming(e1: Term, e2: Term, walked: List[(Var, Term)]): Option[List[(Var, Term)]] = {
     (e1, e2) match {
       case (v1: Var, v2: Var) =>
         lookup(v1, walked) match {
           case None => Some((v1, v2) :: walked)
           case Some(v3) => if (v2 == v3) Some(walked) else None
         }
-      case (Ctr(n1, args1), Ctr(n2, args2)) if n1 == n2 =>
-        (args1 zip args2).foldLeft(Some(walked): Option[List[(Var, Var)]]) { case (opt, (x1, x2)) => opt.flatMap { x => renaming(x1, x2, x) } }
-      case (FCall(n1, args1), FCall(n2, args2)) if n1 == n2 =>
-        (args1 zip args2).foldLeft(Some(walked): Option[List[(Var, Var)]]) { case (opt, (x1, x2)) => opt.flatMap { x => renaming(x1, x2, x) } }
-      case (GCall(n1, args1), GCall(n2, args2)) if n1 == n2 =>
-        (args1 zip args2).foldLeft(Some(walked): Option[List[(Var, Var)]]) { case (opt, (x1, x2)) => opt.flatMap { x => renaming(x1, x2, x) } }
-      case _ => None
-    }
-  }
-
-  def sub(e1: Term, e2: Term, walked: List[(Var, Term)]): Option[List[(Var, Term)]] = {
-    (e1, e2) match {
-      case (v1: Var, v2) =>
+      case (v1: Var, v2: DeCtr) =>
         lookup(v1, walked) match {
           case None => Some((v1, v2) :: walked)
           case Some(v3) => if (v2 == v3) Some(walked) else None
         }
       case (Ctr(n1, args1), Ctr(n2, args2)) if n1 == n2 =>
-        (args1 zip args2).foldLeft(Some(walked): Option[List[(Var, Term)]]) { case (opt, (x1, x2)) => opt.flatMap { x => sub(x1, x2, x) } }
+        (args1 zip args2).foldLeft(Some(walked): Option[List[(Var, Term)]]) { case (opt, (x1, x2)) => opt.flatMap { x => renaming(x1, x2, x) } }
       case (FCall(n1, args1), FCall(n2, args2)) if n1 == n2 =>
-        (args1 zip args2).foldLeft(Some(walked): Option[List[(Var, Term)]]) { case (opt, (x1, x2)) => opt.flatMap { x => sub(x1, x2, x) } }
+        (args1 zip args2).foldLeft(Some(walked): Option[List[(Var, Term)]]) { case (opt, (x1, x2)) => opt.flatMap { x => renaming(x1, x2, x) } }
       case (GCall(n1, args1), GCall(n2, args2)) if n1 == n2 =>
-        (args1 zip args2).foldLeft(Some(walked): Option[List[(Var, Term)]]) { case (opt, (x1, x2)) => opt.flatMap { x => sub(x1, x2, x) } }
+        (args1 zip args2).foldLeft(Some(walked): Option[List[(Var, Term)]]) { case (opt, (x1, x2)) => opt.flatMap { x => renaming(x1, x2, x) } }
       case _ => None
     }
+  }
+
+  def subst(term: Term, m: Map[Var, Term]): Term = term match {
+    case v: Var => m.getOrElse(v, v)
+    case Ctr(name, args) => Ctr(name, args map { subst(_, m) })
+    case DeCtr(name, argN, t) => DeCtr(name, argN, subst(t, m))
+    case FCall(name, args) => FCall(name, args map { subst(_, m) })
+    case GCall(name, args) => GCall(name, args map { subst(_, m) })
   }
 
   def lookup[A](v: Var, renaming: List[(Var, A)]): Option[A] =
