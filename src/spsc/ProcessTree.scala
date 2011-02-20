@@ -11,11 +11,11 @@ class Node(val expr: Term, val parent: Node, val contr: Contraction) {
   def isProcessed = expr match {
     case Ctr(_, Nil) => true
     case v: Var => true
-    case _ => fnode != null
+    case _ => fnode.isDefined
   }
 
-  def fnode =
-    ancestors.find { n => !trivial(n.expr) && renaming(expr, n.expr) }.getOrElse(null)
+  def fnode: Option[Node] =
+    ancestors.find { n => !trivial(n.expr) && renaming(expr, n.expr) }
 }
 
 // pure functional partial tree
