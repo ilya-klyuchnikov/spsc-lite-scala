@@ -17,9 +17,9 @@ object Algebra {
     val map = scala.collection.mutable.Map[Var, Term]()
     def walk(t1: Term, t2: Term): Boolean = (t1, t2) match {
       case (v1: Var, _) => map.getOrElse(v1, t2) == (map + (v1 -> t2))(v1)
-      case (Ctr(n1, args1), Ctr(n2, args2)) => n1 == n2 && List.forall2(args1, args2)(walk)
-      case (FCall(n1, args1), FCall(n2, args2)) => n1 == n2 && List.forall2(args1, args2)(walk)
-      case (GCall(n1, args1), GCall(n2, args2)) => n1 == n2 && List.forall2(args1, args2)(walk)
+      case (Ctr(n1, args1), Ctr(n2, args2)) => n1 == n2 && (args1, args2).zipped.forall(walk)
+      case (FCall(n1, args1), FCall(n2, args2)) => n1 == n2 && (args1, args2).zipped.forall(walk)
+      case (GCall(n1, args1), GCall(n2, args2)) => n1 == n2 && (args1, args2).zipped.forall(walk)
       case _ => false
     }
     if (walk(t1, t2)) Map(map.toList: _*).filter { case (k, v) => k != v } else null
@@ -27,9 +27,9 @@ object Algebra {
 
   def vars(t: Term): List[Var] = t match {
     case v: Var => (List(v))
-    case Ctr(_, args) => (List[Var]() /: args) { (vs, exp) => vs ++ (vars(exp) -- vs) }
-    case FCall(_, args) => (List[Var]() /: args) { (vs, exp) => vs ++ (vars(exp) -- vs) }
-    case GCall(_, args) => (List[Var]() /: args) { (vs, exp) => vs ++ (vars(exp) -- vs) }
+    case Ctr(_, args) => (List[Var]() /: args) { (vs, exp) => vs ++ (vars(exp) filterNot (vs contains)) }
+    case FCall(_, args) => (List[Var]() /: args) { (vs, exp) => vs ++ (vars(exp) filterNot (vs contains)) }
+    case GCall(_, args) => (List[Var]() /: args) { (vs, exp) => vs ++ (vars(exp) filterNot (vs contains)) }
   }
 
   def freshVar(x: AnyRef = null) = { i += 1; Var("v" + i) }; private var i = 0;

@@ -33,7 +33,7 @@ class Tree(val root: Node, val children: Map[Node, List[Node]]) {
   
   def leaves_(node: Node): List[Node] = 
     if (children(node).isEmpty) List(node) 
-    else List.flatten(children(node) map leaves_)
+    else (children(node) map leaves_).flatten
   
   def leaves() = leaves_(root)
 }
