@@ -9,7 +9,7 @@ object Algebra {
     case GCall(name, args) => GCall(name, args map { subst(_, m) })
   }
 
-  def equiv(t1: Term, t2: Term): Boolean = inst(t1, t2) && inst(t2, t1)
+  def renaming(t1: Term, t2: Term): Boolean = inst(t1, t2) && inst(t2, t1)
 
   def inst(t1: Term, t2: Term): Boolean = findSubst(t1, t2) != null
 

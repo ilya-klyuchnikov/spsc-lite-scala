@@ -15,7 +15,7 @@ class Node(val expr: Term, val parent: Node, val contr: Contraction) {
   }
 
   def fnode =
-    ancestors.find { n => !trivial(n.expr) && equiv(expr, n.expr) }.getOrElse(null)
+    ancestors.find { n => !trivial(n.expr) && renaming(expr, n.expr) }.getOrElse(null)
 }
 
 // pure functional partial tree
