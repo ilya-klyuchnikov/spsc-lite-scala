@@ -30,17 +30,24 @@ class BaseSuperCompiler(p: Program) {
       }
   }
 
+  // build process tree without generalizations
   def buildProcessTree(e: Term): Tree = {
     var t = new Tree(new Node(e, null, null), Map().withDefaultValue(Nil))
-    while (t.leaves.exists { !_.isProcessed }) {
-      val b = t.leaves.find(!_.isProcessed).get
-      t = b.ancestors.find(a => !trivial(a.expr) && inst(a.expr, b.expr)) match {
-        case Some(a) => t.replace(b, Let(a.expr, findSubst(a.expr, b.expr).toList))
-        case None => t.addChildren(b, driveExp(b.expr)) // drive
-      }
-    }
-    t
+    buildTree(t)
   }
 
+  def buildTree(t: Tree): Tree =
+    t.uprocessedLeaf match {
+      case None => t
+      case Some(b) => {
+        val t1 = b.ancestors.find(a => !trivial(a.expr) && inst(a.expr, b.expr)) match {
+          case Some(a) => t.replace(b, Let(a.expr, findSubst(a.expr, b.expr).toList))
+          case None => t.addChildren(b, driveExp(b.expr)) // drive
+        }
+        buildTree(t1)
+      }
+    }
+
   def freshPat(p: Pat) = Pat(p.name, p.args map freshVar)
+
 }
