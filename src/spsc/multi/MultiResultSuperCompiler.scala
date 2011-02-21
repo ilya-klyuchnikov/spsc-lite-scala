@@ -1,7 +1,7 @@
-package spsc
+package spsc.multi
 
-import Algebra._
-import Decomposition._
+import spsc.Algebra._
+import spsc._
 
 class MultiResultSuperCompiler(p: Program) extends BaseSuperCompiler(p) {
 
@@ -14,19 +14,6 @@ class MultiResultSuperCompiler(p: Program) extends BaseSuperCompiler(p) {
     List(t.addChildren(n, driveExp(n.expr)))
 
   def generalize(t: Tree, n: Node): List[Tree] = Generalizations.gens(n.expr) map { t.replace(n, _) }
-  //splits(n.expr) map { t.replace(n, _) }
-
-  def splits(t: Term): List[Term] = t match {
-    case call@FCall(n, args) if vars(call) != args => {
-      val vs = args map freshVar
-      List(Let(FCall(n, vs), vs zip args))
-    }
-    case call@GCall(n, args) if vars(call) != args => {
-      val vs = args map freshVar
-      List(Let(GCall(n, vs), vs zip args))
-    }
-    case _ => Nil
-  }
 
   def accept(t: Tree, n: Node): Boolean =
     n.expr.size < 7

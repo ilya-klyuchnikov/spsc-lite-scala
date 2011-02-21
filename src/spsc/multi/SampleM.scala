@@ -1,6 +1,7 @@
-package spsc
+package spsc.multi
 
-import Sample._
+import spsc.Sample._
+import spsc._
 
 object SampleM {
   def main(args: Array[String]): Unit = {
