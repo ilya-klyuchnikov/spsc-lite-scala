@@ -11,12 +11,12 @@ object Algebra {
 
   def renaming(t1: Term, t2: Term): Boolean = inst(t1, t2) && inst(t2, t1)
 
-  def inst(t1: Term, t2: Term): Boolean = findSubst(t1, t2) != null
+  def inst(t1: Term, t2: Term): Boolean = (t1.size <= t2.size) && (findSubst(t1, t2) != null)
 
   def findSubst(t1: Term, t2: Term): Map[Var, Term] = {
     val map = scala.collection.mutable.Map[Var, Term]()
     def walk(t1: Term, t2: Term): Boolean = (t1, t2) match {
-      case (v1: Var, _) => map.getOrElse(v1, t2) == (map + (v1 -> t2))(v1)
+      case (v1: Var, _) => map.getOrElse(v1, t2) == (map += (v1 -> t2))(v1)
       case (Ctr(n1, args1), Ctr(n2, args2)) => n1 == n2 && (args1, args2).zipped.forall(walk)
       case (FCall(n1, args1), FCall(n2, args2)) => n1 == n2 && (args1, args2).zipped.forall(walk)
       case (GCall(n1, args1), GCall(n2, args2)) => n1 == n2 && (args1, args2).zipped.forall(walk)
@@ -39,4 +39,5 @@ object Algebra {
     case GCall(_, _) => false
     case _ => true
   }
+  
 }

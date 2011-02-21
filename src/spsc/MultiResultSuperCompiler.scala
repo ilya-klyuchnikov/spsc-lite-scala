@@ -13,8 +13,8 @@ class MultiResultSuperCompiler(p: Program) extends BaseSuperCompiler(p) {
   def drive(t: Tree, n: Node): List[Tree] =
     List(t.addChildren(n, driveExp(n.expr)))
 
-  def generalize(t: Tree, n: Node): List[Tree] =
-    splits(n.expr) map { t.replace(n, _) }
+  def generalize(t: Tree, n: Node): List[Tree] = Generalizations.gens(n.expr) map { t.replace(n, _) }
+  //splits(n.expr) map { t.replace(n, _) }
 
   def splits(t: Term): List[Term] = t match {
     case call@FCall(n, args) if vars(call) != args => {
@@ -29,7 +29,7 @@ class MultiResultSuperCompiler(p: Program) extends BaseSuperCompiler(p) {
   }
 
   def accept(t: Tree, n: Node): Boolean =
-    n.expr.size < 20
+    n.expr.size < 7
 
   def buildTrees(t: Tree): List[Tree] =
     t.uprocessedLeaf match {

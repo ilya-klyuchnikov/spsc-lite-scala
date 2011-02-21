@@ -24,7 +24,8 @@ case class GCall(name: String, args: List[Term]) extends Term {
 }
 
 case class Let(term: Term, bindings: List[(Var, Term)]) extends Term {
-	lazy val size = 1 + (bindings map {_._2.size}).sum
+  lazy val size = 1 + (bindings map { _._2.size }).sum
+  override def toString = "let " + (bindings map {case (x, y) => x + "="+y} mkString(", ")) + " in " + term
 }
 
 case class Pat(name: String, args: List[Var]) {
