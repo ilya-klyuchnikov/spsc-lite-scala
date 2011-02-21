@@ -20,7 +20,7 @@ object SampleM {
     val target = SParsers.parseTerm(targetText)
     val sc = new MultiResultSuperCompiler(program)
     val pts = sc.buildTrees(target)
-    val ress = pts map { new ResidualProgramGenerator(_).result }
+    val ress = pts map { x => (new ResidualProgramGenerator(x).result, new NGenerator(x).result ) }
     
     println()
     println("** runSuperCompilerM **")
@@ -28,10 +28,12 @@ object SampleM {
     println(pts.size + " results")
 
     
-    for ((resTerm, resProgram) <- ress) {
+    for (((resTerm, resProgram), t) <- ress) {
       println()
       println("-------")
       println(resTerm); println(resProgram);
+      println("*")
+      println(t)
 
     }
   }
