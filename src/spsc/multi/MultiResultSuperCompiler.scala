@@ -11,20 +11,33 @@ class MultiResultSuperCompiler(p: Program) extends BaseSuperCompiler(p) {
   }
 
   def drive(t: Tree, n: Node): List[Tree] =
-    List(t.addChildren(n, driveExp(n.expr)))
+    if (accept(t, n))
+      List(t.addChildren(n, driveExp(n.expr)))
+    else Nil
 
-  def generalize(t: Tree, n: Node): List[Tree] = Generalizations.gens(n.expr) map { t.replace(n, _) }
+  // here we do not allow two immediate sequential generalizations
+  // since they may be merged into one
+  def generalize(t: Tree, n: Node): List[Tree] =
+    if (n.parent == null)
+      Generalizations.gens(n.expr) map { t.replace(n, _) }
+    else (n.parent.expr) match {
+      case Let(_, _) => Nil
+      case _ => Generalizations.gens(n.expr) map { t.replace(n, _) }
+    }
 
   def accept(t: Tree, n: Node): Boolean =
     n.expr.size < 7
 
+  var n = 0
+
   def buildTrees(t: Tree): List[Tree] =
     t.uprocessedLeaf match {
-      case Some(n) if (accept(t, n)) =>
+      case Some(n) =>
         (drive(t, n) ++ generalize(t, n)).map { buildTrees }.flatten
-      case None =>
+      case None => {
+        //n = n + 1
+        //println(n)
         List(t)
-      case _ =>
-        List()
+      }
     }
 }

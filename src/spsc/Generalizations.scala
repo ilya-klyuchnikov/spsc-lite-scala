@@ -5,14 +5,16 @@ object Generalizations {
   type Sub = List[(Var, Term)]
 
   // the main trick is to remove duplicates here
-  def gens(e: Term): List[Term] =
-    generalize(e, Nil).
+  def gens(e: Term): List[Term] = e match {
+    case Let(_, _) => Nil
+    case _ => generalize(e, Nil).
       foldRight(List[(Term, Sub)]()) { (elem, filtered) =>
         filtered.find { x => Algebra.renaming(elem._1, x._1) } match { case None => elem :: filtered; case Some(_) => filtered }
       }.
       filter { !_._1.isInstanceOf[Var] }. // remove full abstraction
       filter { !_._2.isEmpty }. // remove identity
       map { case (t, sub) => if (sub.isEmpty) t else Let(t, sub) }
+  }
 
   private def generalize(e: Term, sub: Sub): List[(Term, Sub)] = {
 

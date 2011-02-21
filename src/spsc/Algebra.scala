@@ -32,7 +32,8 @@ object Algebra {
     case GCall(_, args) => (List[Var]() /: args) { (vs, exp) => vs ++ (vars(exp) filterNot (vs contains)) }
   }
 
-  def freshVar(x: AnyRef = null) = { i += 1; Var("v" + i) }; private var i = 0;
+  private var i: Long = 0; 
+  def freshVar(x: AnyRef = null) = { i += 1; Var("v" + i) }; 
 
   def trivial(expr: Term): Boolean = expr match {
     case FCall(_, _) => false
