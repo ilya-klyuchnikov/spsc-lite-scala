@@ -7,6 +7,7 @@ object Generalizations {
   // the main trick is to remove duplicates here
   def gens(e: Term): List[Term] = e match {
     case Let(_, _) => Nil
+    case Ctr(_, _) => Nil
     case _ => generalize(e, Nil).
       foldRight(List[(Term, Sub)]()) { (elem, filtered) =>
         filtered.find { x => Algebra.renaming(elem._1, x._1) } match { case None => elem :: filtered; case Some(_) => filtered }

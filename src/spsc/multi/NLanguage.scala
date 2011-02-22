@@ -19,7 +19,7 @@ import Z._
 
 // "Normalized"
 abstract sealed class NExpr {
-  //def size(): Int
+  def size(): Int
   def toDoc: Document
   override def toString = {
     val doc1 = toDoc
@@ -30,28 +30,33 @@ abstract sealed class NExpr {
 }
 
 case class NVar(n: String) extends NExpr {
+  val size = 1
   def toDoc = text(n)
 }
 case class NCtr(name: String, args: List[NExpr]) extends NExpr {
+  lazy val size = 1 + (args map { _.size }).sum
   def toDoc = args match {
     case Nil => text(name + "()")
-    case _ => group((name + "(") :: 
-    		nest(2, ED :: args.foldRight(ED) { (x, y) => y match { case ED => x.toDoc; case _ => x.toDoc ::", " :: y } }) :: ")" :: ED)
+    case _ => group((name + "(") ::
+      nest(2, ED :: args.foldRight(ED) { (x, y) => y match { case ED => x.toDoc; case _ => x.toDoc :: ", " :: y } }) :: ")" :: ED)
   }
 }
 case class NCall(name: String, args: List[NExpr]) extends NExpr {
+  lazy val size = 1 + (args map { _.size }).sum
   def toDoc = args match {
     case Nil => text(name + "()")
-    case _ => group((name + "(") :: 
-    		nest(2, ED :: args.foldRight(ED) { (x, y) => y match { case ED => x.toDoc; case _ => x.toDoc ::", " :: y } }) :: ")" :: ED)
+    case _ => group((name + "(") ::
+      nest(2, ED :: args.foldRight(ED) { (x, y) => y match { case ED => x.toDoc; case _ => x.toDoc :: ", " :: y } }) :: ")" :: ED)
   }
 }
 case class NCase(sel: NExpr, bs: List[(NPat, NExpr)]) extends NExpr {
+  lazy val size = sel.size + (bs.map { _._2.size }).sum
   def toDoc = group(group("case" :/: sel.toDoc :/: "of {" :: ED) ::
     nest(2, bs.foldRight(ED) { (b, y) => ED :/: bToDoc(b) :: y }) :/: "}" :: ED)
 
 }
 case class NLet(name: String, f: NFun, in: NExpr) extends NExpr {
+  lazy val size = 1 + f.args.size + f.term.size + in.size
   def toDoc = group("let" ::
     nest(2, group(ED :/: text(f.name + f.args.mkString("(", ", ", ")")) :: " = " :: f.term.toDoc))
     :/: "in" :: nest(2, ED :/: in.toDoc) :: ED)
