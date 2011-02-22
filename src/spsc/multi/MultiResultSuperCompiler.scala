@@ -3,7 +3,7 @@ package spsc.multi
 import spsc.Algebra._
 import spsc._
 
-class MultiResultSuperCompiler(p: Program) extends BaseSuperCompiler(p) {
+class MultiResultSuperCompiler(whistle: (Tree, Node) => Boolean, p: Program) extends BaseSuperCompiler(p) {
 
   def buildTrees(e: Term): List[Tree] = {
     var t = new Tree(new Node(e, null, null), Map().withDefaultValue(Nil))
@@ -11,7 +11,7 @@ class MultiResultSuperCompiler(p: Program) extends BaseSuperCompiler(p) {
   }
 
   def drive(t: Tree, n: Node): List[Tree] =
-    if (accept(t, n))
+    if (whistle(t, n))
       List(t.addChildren(n, driveExp(n.expr)))
     else Nil
 
@@ -24,9 +24,6 @@ class MultiResultSuperCompiler(p: Program) extends BaseSuperCompiler(p) {
       case Let(_, _) => Nil
       case _ => Generalizations.gens(n.expr) map { t.replace(n, _) }
     }
-
-  def accept(t: Tree, n: Node): Boolean =
-    n.expr.size < 7
 
   var n = 0
 
