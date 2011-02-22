@@ -8,7 +8,7 @@ import NAlgebra._
 class NGenerator(val tree: Tree) {
 
   private val sigs = scala.collection.mutable.Map[Node, (String, List[NVar])]()
-  lazy val result = fold(tree.root)
+  lazy val result = fixNames(fold(tree.root))
 
   // proceed base node or repeat node by creating letrec or call respectively 
   // otherwise, delegate to make
@@ -56,7 +56,7 @@ class NGenerator(val tree: Tree) {
         fold(tree.children(n).head)
       } else {
         // variants
-        val sortedChildren = tree.children(n) sortWith { (n1, n2) => (n1.contr.pat.name compareTo n1.contr.pat.name) < 0 }
+        val sortedChildren = tree.children(n) sortWith { (n1, n2) => (n1.contr.pat.name compareTo n2.contr.pat.name) < 0 }
         val sel = NVar(tree.children(n).head.contr.v.name)
         val bs = sortedChildren map { c => (convert(c.contr.pat), fold(c)) }
         NCase(sel, bs)
@@ -81,12 +81,12 @@ class NGenerator(val tree: Tree) {
   var fCount = 0
   private def createFName(): String = {
     fCount = fCount + 1
-    "f." + fCount
+    "_." + fCount
   }
 
   var vCount = 0
   private def createVar(): NVar = {
     vCount = vCount + 1
-    NVar("v." + fCount)
+    NVar("_." + fCount)
   }
 }

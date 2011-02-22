@@ -24,7 +24,7 @@ abstract sealed class NExpr {
   override def toString = {
     val doc1 = toDoc
     val writer1 = new java.io.StringWriter()
-    doc1.format(80, writer1)
+    doc1.format(140, writer1)
     writer1.toString
   }
 }
@@ -54,7 +54,7 @@ case class NCase(sel: NExpr, bs: List[(NPat, NExpr)]) extends NExpr {
 case class NLet(name: String, f: NFun, in: NExpr) extends NExpr {
   def toDoc = group("let" ::
     nest(2, group(ED :/: text(f.name + f.args.mkString("(", ", ", ")")) :: " = " :: f.term.toDoc))
-    :/: "in" :: nest(2, ED :/: in.toDoc) :: ")" :: ED)
+    :/: "in" :: nest(2, ED :/: in.toDoc) :: ED)
 }
 
 case class NFun(name: String, args: List[NVar], term: NExpr)
