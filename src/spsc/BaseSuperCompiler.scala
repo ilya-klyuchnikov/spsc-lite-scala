@@ -24,7 +24,9 @@ class BaseSuperCompiler(p: Program) {
           p.gs(name) map { g =>
             val fp = freshPat(g.p)
             val gReduced = subst(g.term, Map((g.p.args ::: g.args) zip (fp.args ::: args.tail): _*))
-            (context.replaceRedex(gReduced), Contraction(v, fp))
+            val info = Map(v -> Ctr(fp.name, fp.args))
+            val driven = subst(context.replaceRedex(gReduced), info)
+            (driven, Contraction(v, fp))
           }
         }
       }
