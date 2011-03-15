@@ -18,25 +18,30 @@ class SuperCompiler(p: Program) extends BaseSuperCompiler(p) {
             else abs(t, a, b)
           }
           case None => t.addChildren(b, driveExp(b.expr)) // drive
-        }}}
+        }
+      }
+    }
     t
   }
 
-  def abs(t: Tree, a: Node, b: Node) =
+  def abs(t: Tree, a: Node, b: Node) = {
     ((g: Gen) => t.replace(a, Let(g.t, g.m1.toList)))(MSG.msg(a.expr, b.expr))
+  }
 
-  def split(t: Tree, n: Node): Tree = n.expr match {
-    case Ctr(name, args) => {
-      val vs = args map freshVar
-      t.replace(n, Let(Ctr(name, vs), vs zip args))
-    }
-    case FCall(name, args) => {
-      val vs = args map freshVar
-      t.replace(n, Let(FCall(name, vs), vs zip args))
-    }
-    case GCall(name, args) => {
-      val vs = args map freshVar
-      t.replace(n, Let(GCall(name, vs), vs zip args))
+  def split(t: Tree, n: Node): Tree = {
+    n.expr match {
+      case Ctr(name, args) => {
+        val vs = args map freshVar
+        t.replace(n, Let(Ctr(name, vs), vs zip args))
+      }
+      case FCall(name, args) => {
+        val vs = args map freshVar
+        t.replace(n, Let(FCall(name, vs), vs zip args))
+      }
+      case GCall(name, args) => {
+        val vs = args map freshVar
+        t.replace(n, Let(GCall(name, vs), vs zip args))
+      }
     }
   }
 }

@@ -1,23 +1,23 @@
 package spsc
 object Sample {
-  
-  val target1  = 
+
+  val target1 =
     "gApp(gApp(x, y), z)"
-  val program1 = 
+  val program1 =
     """
     gApp(Nil(), vs) = vs; 
     gApp(Cons(u, us), vs) = Cons(u, gApp(us, vs));
     """
-  
-  val target2 = 
+
+  val target2 =
     "fMain(x, y, z)"
-  val program2 = 
+  val program2 =
     """
     fMain(x, y, z) = gAppend(gAppend(x, y), z);
     gAppend(Nil(), vs1) = vs1;
     gAppend(Cons(u, us), vs) = Cons(u, gAppend(us, vs));
     """
-  
+
   val target3 =
     "gRev(x)"
   val program3 =
@@ -27,18 +27,18 @@ object Sample {
     gRev(Nil()) = Nil();
     gRev(Cons(x, xs))=gApp(gRev(xs), Cons(x, Nil()));
     """
-  
+
   val target4 =
     "gAddAcc(a, b)"
-  val program4 = 
+  val program4 =
     """
     gAddAcc(Z(), y) = y;
     gAddAcc(S(x), y) = gAddAcc(x, S(y));
     """
-  
-  val target5 = 
+
+  val target5 =
     "f1(z)"
-  val program5 = 
+  val program5 =
     """
     f1(x) = f2(x);
     f2(x) = g1(x);
@@ -46,7 +46,7 @@ object Sample {
     g1(A(a)) = f1(a);
     g1(B(b)) = f1(b);
     """
-  
+
   val target6 =
     "fEqxx(x)"
   val program6 =
@@ -62,47 +62,73 @@ object Sample {
 
     fEqxx(x) = gEq(x, x);
     """
-  
-  val target7  = 
+
+  val target7 =
     "gApp(gApp(x, x), x)"
-  val program7 = 
+  val program7 =
     """
     gApp(Nil(), vs) = vs; 
     gApp(Cons(u, us), vs) = Cons(u, gApp(us, vs));
     """
-  
+
   val target8 =
     "gD(S(x))"
   val program8 =
-	"""
+    """
 	gD(Z()) = Z();
 	gD(S(x)) = gD(S(S(x)));
 	"""
-  
-  def main(args : Array[String]) : Unit = {
+
+  val target9 =
+    "gEq(gAdd(x, y), gAdd(y, x))"
+
+  val target90 =
+    "gEq(gAdd(a, b), gAdd(c, d))"
+
+  val target91 =
+    "gEq(gAdd(a, S(b)), gAdd(c, S(d)))"
+
+  val target9a =
+    "gEq(gAdd(x1, S(y1)), gAdd(y1, S(x1)))"
+  val program9 =
+    """
+	gEq(Z(), y) = gEqZ(y);
+    gEq(S(x), y) = gEqS(y, x);
+
+    gEqZ(Z()) = True();
+    gEqZ(S(x)) = False();
+
+    gEqS(Z(), x) = False();
+    gEqS(S(y), x) = gEq(x, y);
+
+    gAdd(Z(), y) = y;
+    gAdd(S(x), y) = S(gAdd(x, y));
+	"""
+
+  def main(args: Array[String]): Unit = {
     runBaseSuperCompiler(target1, program1)
     runSuperCompiler(target1, program1)
-    
+
     runBaseSuperCompiler(target2, program2)
     runSuperCompiler(target2, program2)
-    
+
     // BaseSuperCompiler will not terminate for input 3
     runSuperCompiler(target3, program3)
-    
+
     runBaseSuperCompiler(target4, program4)
     runSuperCompiler(target4, program4)
-    
+
     runBaseSuperCompiler(target5, program5)
     runSuperCompiler(target5, program5)
-    
+
     runBaseSuperCompiler(target6, program6)
     runSuperCompiler(target6, program6)
-    
+
     runSuperCompiler(target7, program7)
-    
+
     runSuperCompiler(target8, program8)
   }
-  
+
   def runSuperCompiler(targetText: String, programText: String) = {
     val program = SParsers.parseProg(programText)
     val target = SParsers.parseTerm(targetText)
@@ -115,7 +141,7 @@ object Sample {
     println(resTerm); println(resProgram);
     println("-------")
   }
-  
+
   def runBaseSuperCompiler(targetText: String, programText: String) = {
     val program = SParsers.parseProg(programText)
     val target = SParsers.parseTerm(targetText)
