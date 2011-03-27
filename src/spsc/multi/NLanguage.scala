@@ -3,21 +3,22 @@ package spsc.multi
 import scala.text.Document
 import scala.text.Document._
 
-object Z {
-  val ED: scala.text.Document = empty
-  def bToDoc(x: (NPat, NExpr)): Document = group(x._1.toDoc :: " ->" :: nest(2, ED :/: x._2.toDoc :: ";" :: ED))
-}
-
-import Z._
-
 // It seems that the easiest elegant way 
 // to normalize programs is to use explicit
 // letrecs and case-expressions.
 // 
 // It is an interesting question whether we can "normalize"
 // programs in elegant way using SLL language
+//
+// So NLanguage is a "normalized" SLL
 
-// "Normalized"
+object NLanguage {
+  val ED: scala.text.Document = empty
+  def bToDoc(x: (NPat, NExpr)): Document = group(x._1.toDoc :: " ->" :: nest(2, ED :/: x._2.toDoc :: ";" :: ED))
+}
+
+import NLanguage._
+
 abstract sealed class NExpr {
   def size(): Int
   def toDoc: Document
