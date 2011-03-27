@@ -65,7 +65,9 @@ class NGenerator(val tree: Tree) {
 
   private def createSignature(fNode: Node, recNodes: List[Node]): (String, List[NVar]) = {
     var fVars: List[Var] = vars(fNode.expr)
-
+    
+    // do not allow free variables is letrec for now
+    /*
     var changedVars = Set[Var]()
     for (n <- recNodes) {
       val betaT = n.expr
@@ -74,8 +76,9 @@ class NGenerator(val tree: Tree) {
       changedVars = changedVars ++ args0
     }
     fVars = fVars filter { changedVars.contains }
-
+	*/
     (createFName(), fVars map { v => NVar(v.name) })
+
   }
 
   var fCount = 0
