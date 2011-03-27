@@ -1,10 +1,15 @@
 package spsc
 
+// should be rewritten in more transparent way
+// for now we just AD-HOC generate and remove duplicates here 
 object Generalizations {
 
   type Sub = List[(Var, Term)]
 
-  // the main trick is to remove duplicates here
+  // trick #1: remove duplicates here
+  //
+  // trick #2: do not generalize let expressions and constructors
+  // because a sub-expression may be generalized further
   def gens(e: Term): List[Term] = e match {
     case Let(_, _) => Nil
     case Ctr(_, _) => Nil
@@ -30,13 +35,13 @@ object Generalizations {
       case t => List((t, sub))
     }
 
-    // reference to already defined binding, if any
+    // a reference to an already defined binding, if any
     val ys: List[(Term, Sub)] = sub find { _._2 == e } match {
       case None => Nil
       case Some((v, _)) => List((v, sub))
     }
 
-    // new binding = full abstraction
+    // the whole (sub)-expression is abstracted
     val ns: List[(Term, Sub)] = {
       val fv = Algebra.freshVar()
       List((fv, (fv, e) :: sub))
@@ -45,6 +50,7 @@ object Generalizations {
     ys ++ ns ++ xs
   }
 
+  // subtask: generalize elements and merge
   private def generalizeArgs(args: List[Term]): List[(List[Term], Sub)] =
     args.foldRight(List[(List[Term], Sub)]((Nil, Nil))) { (arg, acc) =>
       for ((terms, sub) <- acc; (t, sub1) <- generalize(arg, sub)) yield (t :: terms, sub1)
