@@ -90,6 +90,6 @@ class NGenerator(val tree: Tree) {
   var vCount = 0
   private def createVar(): NVar = {
     vCount = vCount + 1
-    NVar("_." + fCount)
+    NVar("_." + vCount)
   }
 }
