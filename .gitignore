@@ -1,2 +1,5 @@
 .scala_dependencies
 bin/*
+target/
+.idea/
+.idea_modules/
