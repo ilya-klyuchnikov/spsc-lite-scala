@@ -2,3 +2,5 @@
 .scala_dependencies
 bin/*
 spsc/*
+.idea/
+.idea_modules/
